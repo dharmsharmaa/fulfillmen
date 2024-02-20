@@ -16,7 +16,8 @@
  * Plugin Name:       Fulfillmen
  * Plugin URI:        http://www.fulfillmen.com
  * Description:       WooCommerce Order Fulfilment by Fulfillmen. Update notes: Bugfixes, added compatibility for the latest version of WooCommerce. 
- * Version:           1.1.6
+ * Version:           1.1.7
+ * GitHub Plugin URI: https://github.com/fulfillmen/woocommerce
  * Author:            Dhairya Sharma
  * Author URI:        www.dhairyasharma.com
  * License:           GPL-2.0+
@@ -30,7 +31,7 @@ if (!defined('WPINC')) {
     die;
 }
 
-define('FULFILLMEN_VERSION', '1.1.6');
+define('FULFILLMEN_VERSION', '1.1.7');
 
 if (!function_exists('is_plugin_active')) {
     include_once ABSPATH . '/wp-admin/includes/plugin.php';
