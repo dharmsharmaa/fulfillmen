@@ -42,11 +42,28 @@ function check_plugin_updates() {
     $plugin_slug = 'fulfillmen'; 
     $github_repo = 'fulfillmen/woocommerce'; 
 
-    $url = "https://api.github.com/repos/{$github_repo}/releases/latest";
-    $response = wp_remote_get($url);
+    // Check if cached data exists
+    $cache_key = 'fulfillmen_update_info';
+    $cached_data = get_transient($cache_key);
 
-    if (!is_wp_error($response) && $response['response']['code'] === 200) {
-        $release_data = json_decode($response['body'], true);
+    if ($cached_data === false) {
+        // Cached data doesn't exist or has expired, fetch fresh data from GitHub API
+        $url = "https://api.github.com/repos/{$github_repo}/releases/latest";
+        $response = wp_remote_get($url);
+
+        if (!is_wp_error($response) && $response['response']['code'] === 200) {
+            $release_data = json_decode($response['body'], true);
+            $latest_version = $release_data['tag_name'];
+
+            // Cache the fetched data for 1 day
+            set_transient($cache_key, $release_data, 2 * HOUR_IN_SECONDS);
+        }
+    } else {
+        // Use cached data
+        $release_data = $cached_data;
+    }
+
+    if (isset($release_data) && is_array($release_data)) {
         $latest_version = $release_data['tag_name'];
         $installed_version = get_option("{$plugin_slug}_version");
         if (version_compare($installed_version, $latest_version, '<')) {
@@ -61,24 +78,25 @@ function check_plugin_updates() {
 
 
 
-function custom_update_checker($result, $action, $args) {
-    if ($action === 'plugin_information' && isset($args->slug) && $args->slug === 'fulfillmen') {
-        $github_repo = 'fulfillmen/woocommerce'; 
-        $url = "https://api.github.com/repos/{$github_repo}/releases/latest";
-        $response = wp_remote_get($url);
 
-        if (!is_wp_error($response) && $response['response']['code'] === 200) {
-            $release_data = json_decode($response['body'], true);
-            $update = new stdClass();
-            $update->slug = 'fulfillmen';
-            $update->new_version = $release_data['tag_name'];
-            $update->url = $release_data['html_url'];
-            $update->package = $release_data['zipball_url'];
-            $result = new WP_Error(false, '', $update);
-        }
-    }
-    return $result;
-}
+// function custom_update_checker($result, $action, $args) {
+//     if ($action === 'plugin_information' && isset($args->slug) && $args->slug === 'fulfillmen') {
+//         $github_repo = 'fulfillmen/woocommerce'; 
+//         $url = "https://api.github.com/repos/{$github_repo}/releases/latest";
+//         $response = wp_remote_get($url);
+
+//         if (!is_wp_error($response) && $response['response']['code'] === 200) {
+//             $release_data = json_decode($response['body'], true);
+//             $update = new stdClass();
+//             $update->slug = 'fulfillmen';
+//             $update->new_version = $release_data['tag_name'];
+//             $update->url = $release_data['html_url'];
+//             $update->package = $release_data['zipball_url'];
+//             $result = new WP_Error(false, '', $update);
+//         }
+//     }
+//     return $result;
+// }
 
 
 

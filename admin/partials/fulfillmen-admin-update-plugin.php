@@ -1,5 +1,6 @@
 <?php
-
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 /**
  * Provide a admin area view for the plugin
  *
@@ -23,60 +24,119 @@ $iFautoMated = get_option($prefix . 'automation_fw');
 $userID = get_option($prefix . 'fulfillmen_username');
 $userPass = get_option($prefix . 'fulfillmen_password');
 $warehouse = get_option($prefix . 'warehouse_ID');
-$ASTIntegration = get_option($prefix . 'ast_integration');
+
+if ( ! function_exists( 'WP_Filesystem' ) ) {
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+}
+$wp_filesystem = WP_Filesystem();
+
+function copy_directory($src, $dst) {
+    if (!is_readable($src)) {
+        echo "Source directory '{$src}' is not readable.";
+        return false;
+    }
+
+    if (!is_dir($dst)) {
+        echo "Destination directory '{$dst}' does not exist or is not a directory.";
+        return false;
+    }
+
+    $dir = opendir($src);
+    if (!$dir) {
+        echo "Failed to open source directory '{$src}'.";
+        return false;
+    }
+
+    while (false !== ($file = readdir($dir))) {
+        if (($file != '.') && ($file != '..')) {
+            $srcFile = $src . '/' . $file;
+            $dstFile = $dst . '/' . $file;
+
+            if (is_dir($srcFile)) {
+                // Recursively copy subdirectories
+                if (!copy_directory($srcFile, $dstFile)) {
+                    echo "Failed to copy directory '{$srcFile}' to '{$dstFile}'.";
+                    return false;
+                }
+            } else {
+                // Copy files, overwriting existing ones
+                if (!copy($srcFile, $dstFile)) {
+                    echo "Failed to copy file '{$srcFile}' to '{$dstFile}'.";
+                    return false;
+                }
+            }
+        }
+    }
+
+    closedir($dir);
+    return true;
+}
+
 
 
 function download_and_install_plugin_update() {
     $plugin_slug = 'fulfillmen'; 
     $github_repo = 'fulfillmen/woocommerce'; 
 
-    // Download latest release zip file
-    $url = "https://api.github.com/repos/{$github_repo}/releases/latest";
-    $response = wp_remote_get($url);
+    // Check if cached data exists
+    $cache_key = 'fulfillmen_plugin_update';
+    $cached_data = get_transient($cache_key);
 
-    if (!is_wp_error($response) && $response['response']['code'] === 200) {
-        $release_data = json_decode($response['body'], true);
-        $zip_url = $release_data['zipball_url'];
-        $zip_file = download_url($zip_url);
+    if ($cached_data === false) {
+        // Cached data doesn't exist or has expired, fetch fresh data from GitHub API
+        $url = "https://api.github.com/repos/{$github_repo}/releases/latest";
+        $response = wp_remote_get($url);
 
-        if (!is_wp_error($zip_file)) {
-            // Extract zip file
-            $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
-            $extracted_dir = unzip_file($zip_file, $plugin_dir); // Provide destination directory
+        if (!is_wp_error($response) && $response['response']['code'] === 200) {
+            $release_data = json_decode($response['body'], true);
+            
+            // Cache the fetched data for 1 hour
+            set_transient($cache_key, $release_data, HOUR_IN_SECONDS);
+        }
+    } else {
+        // Use cached data
+        $release_data = $cached_data;
+    }
 
-            if (!is_wp_error($extracted_dir)) {
-                // Replace existing plugin files
-                $source_dir = $extracted_dir . '/' . $plugin_slug . '-' . $release_data['tag_name'];
-                $result = copy_dir($source_dir, $plugin_dir, true);
+    if (isset($release_data) && is_array($release_data)) {
+        $latest_version = $release_data['tag_name'];
+        $installed_version = get_option("{$plugin_slug}_version");
+        
+        if (version_compare($installed_version, $latest_version, '<')) {
+            // New version available, proceed with update
+            $zip_url = $release_data['zipball_url'];
+            $zip_file = download_url($zip_url);
+            
+            if (!is_wp_error($zip_file)) {
+                // Extract zip file
+                $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
+                $extracted_dir = unzip_file($zip_file, $plugin_dir);
+                
+                if (!is_wp_error($extracted_dir)) {
+                    // Replace existing plugin files
+                    $source_dir = $extracted_dir . '/' . $plugin_slug . '-' . $release_data['tag_name'];
+                    copy_directory($source_dir, $plugin_dir); 
 
-                if ($result) {
                     // Update version number
-                    update_option("{$plugin_slug}_version", $release_data['tag_name']);
+                    update_option("{$plugin_slug}_version", $latest_version);
 
                     // Success message
-                    add_action('admin_notices', function() {
-                        echo '<div class="notice notice-success"><p>Plugin updated successfully!</p></div>';
-                    });
+                    echo '<div class="notice notice-success"><p>Plugin updated successfully!</p></div>';
                 } else {
                     // Error message
-                    add_action('admin_notices', function() {
-                        echo '<div class="notice notice-error"><p>Failed to update plugin.</p></div>';
-                    });
+                    echo '<div class="notice notice-error"><p>Failed to extract zip file: ' . $extracted_dir->get_error_message() . '</p></div>';
                 }
-            }else{
-                add_action('admin_notices', function() {
-                    echo '<div class="notice notice-error"><p>Failed to update plugin.</p></div>';
-                });
-            }
-        }else{
-            add_action('admin_notices', function() {
+            } else {
+                // Error message
                 echo '<div class="notice notice-error"><p>Failed to fetch the plugin file from url '.$zip_url.' </p></div>';
-            });
+            }
+        } else {
+            // Plugin is up to date, no action needed
+            echo '<div class="notice notice-info"><p>Plugin is already up to date.</p></div>';
         }
-    }else{
-        add_action('admin_notices', function() {
-            echo '<div class="notice notice-error"><p>Failed to fetch the repository from '.$url.'.</p></div>';
-        });
+    } else {
+        // Error message
+        echo '<div class="notice notice-error"><p>Failed to fetch plugin update information.</p></div>';
     }
 }
 
