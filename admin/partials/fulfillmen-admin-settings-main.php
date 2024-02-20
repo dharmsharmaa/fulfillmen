@@ -99,7 +99,7 @@ $settings = array(
         ),   
         array(
             'id'        => $prefix . 'process_all_geos',
-            'name'      => __( 'Process Orders from unconfigured geos', 'fulfillmen' ),
+            'name'      => __( 'Process Orders From Unconfigured Geos', 'fulfillmen' ),
             'type'      => 'checkbox',
             'desc'  => __( ' Enable order processing for orders bound for geo locations which are not configured', 'fulfillmen' ),
             'default'   => 'yes'

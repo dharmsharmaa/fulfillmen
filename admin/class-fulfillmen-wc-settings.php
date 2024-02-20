@@ -53,6 +53,7 @@ if (!class_exists('Fulfillmen_WC_Settings')) {
             'shipping' => __('Shipping Configuration', 'fulfillmen'),
             'account' => __('Account Info', 'fulfillmen'),
             'bulktracking' => __('Bulk Tracking Update', 'fulfillmen'),
+            'pluginupdate'=> __('Plugin Update', 'fulfillmen')
             );
             return apply_filters('woocommerce_get_sections_' . $this->id, $sections);
         }
@@ -108,6 +109,9 @@ if (!class_exists('Fulfillmen_WC_Settings')) {
                     break;
                 case 'bulktracking':
                     include 'partials/fulfillmen-admin-bulk-trackings-main.php';
+                    break;
+                case 'pluginupdate':
+                    include 'partials/fulfillmen-admin-update-plugin.php';
                     break;
                 default:
                     $settings = $this->get_settings();
