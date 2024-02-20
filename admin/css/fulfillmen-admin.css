@@ -1,0 +1,29 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+
+.widefat td,
+.widefat th {
+    color: #555;
+    vertical-align: middle !important;
+}
+
+.subsubsub {
+    padding: 5px 5px;
+    border: 1px solid grey;
+    background: white;
+}
+
+.apiresponse {
+    width: 80%;
+    background-color: #282828;
+    color: #c5f309;
+    padding: 5px 5px;
+    border-radius: 5px;
+    overflow: scroll;
+}
+
+.wf-sync-sku {
+    margin-top: 10px;
+}
