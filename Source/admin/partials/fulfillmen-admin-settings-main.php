@@ -73,8 +73,7 @@ $settings = array(
             'type'      => 'select',
             'class'     => 'wc-enhanced-select',
             'options'   => $orderType,
-            'desc_tip'  => __( ' Select the Order Mode', 'fulfillmen'),
-            'default'   => '1'
+            'desc_tip'  => __( ' Select the Order Mode', 'fulfillmen')
         ),
         array(
             'id'        => $prefix . 'customtrackingurl',
