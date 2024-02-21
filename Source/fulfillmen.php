@@ -51,30 +51,34 @@ function check_plugin_updates() {
 
     if ($cached_data === false) {
         // Cached data doesn't exist or has expired, fetch fresh data from GitHub API
-        $url = "https://api.github.com/repos/{$github_repo}/releases/latest";
-        $response = wp_remote_get($url);
+        $remote = wp_remote_get( 
+            'https://fulfillmen.github.io/fulfillmen/manifest.json', 
+            array(
+                'timeout' => 10,
+                'headers' => array(
+                    'Accept' => 'application/json'
+                ) 
+            )
+        );    
 
-        if (!is_wp_error($response) && $response['response']['code'] === 200) {
-            $release_data = json_decode($response['body'], true);
-            $latest_version = $release_data['tag_name'];
-
-            // Cache the fetched data for 1 day
-            set_transient($cache_key, $release_data, 2 * HOUR_IN_SECONDS);
+        if( is_wp_error( $remote ) || 200 !== wp_remote_retrieve_response_code( $remote ) || empty( wp_remote_retrieve_body( $remote ) )) {
+            return false;	
         }
+        $release_data = json_decode( wp_remote_retrieve_body( $remote ) ,true);
+        $latest_version = $release_data['version'];
+        // Cache the fetched data for 1 day
+        set_transient($cache_key, $release_data, 2 * HOUR_IN_SECONDS);
     } else {
         // Use cached data
         $release_data = $cached_data;
     }
 
     if (isset($release_data) && is_array($release_data)) {
-        $latest_version = $release_data['tag_name'];
-       
+        $latest_version = $release_data['version'];
         $installed_version =  get_option("{$plugin_slug}_version");
-        //var_dump($installed_version);
         if (version_compare($installed_version, $latest_version, '<')) {
-            // New version available, prompting user to update
             add_action('admin_notices', function () use ($latest_version,$installed_version ) {
-                echo '<div class="notice notice-warning"><p>You are running version '.$installed_version . ' of the Fulfillmen plugin and the new version of Fulfillmen Woocommerce Plugin (' . $latest_version . ') is available. <a href="admin.php?page=wc-settings&tab=fulfillmen&section=pluginupdate">Update now</a></p></div>';
+                echo '<div class="notice notice-warning"><p>You are running version '.$installed_version . ' of the Fulfillmen plugin and the new version of Fulfillmen Woocommerce Plugin (' . $latest_version . ') is available. <a href="plugins.php">Update now</a></p></div>';
             });
         }
     }
@@ -84,47 +88,50 @@ function update_fulfillmen_plugin($transient) {
      $github_cache_key = 'fulfillmen_update_info_pre_update';
      $github_data = get_option($github_cache_key);
 
-     if ($github_data !== false && isset($github_data->tag_name, $github_data->zipball_url)) {
-        $new_version = $github_data->tag_name;
-        //$package_url = $github_data->zipball_url;
-        $package_url = "https://github.com/fulfillmen/fulfillmen/archive/refs/tags/$new_version.zip";
+     if ($github_data !== false && isset($github_data->name, $github_data->download_url)) {
+        $new_version = $github_data->name;
+        $package_url = $github_data->download_url;
         $plugin_slug = 'fulfillmen/fulfillmen.php';
         $plugin_data = array(
             'new_version' => $new_version,
             'url' => 'https://github.com/fulfillmen/fulfillmen',
             'package' => $package_url,
-            'slug'=> "fulfillmen"
+            'slug'=> "fulfillmen",
+            'plugin' => plugin_basename( __FILE__ ),
+            'tested' => $github_data->tested,
         );
         $transient->response[$plugin_slug] = (object) $plugin_data;
         return $transient;
     }
 
-     $github_repo = 'fulfillmen/fulfillmen';
-     $url = "https://api.github.com/repos/{$github_repo}/releases/latest";
-     $response = wp_remote_get($url);
+     $url = "https://fulfillmen.github.io/fulfillmen/manifest.json";
+     $response = wp_remote_get($url,array(
+        'timeout' => 10,
+        'headers' => array(
+            'Accept' => 'application/json'
+        )
+    ));
  
      // Check for successful response
      if (!is_wp_error($response) && $response['response']['code'] === 200) {
          $release_data = json_decode($response['body']);
- 
          // Check if release data is valid
-         if (is_object($release_data) && isset($release_data->tag_name, $release_data->zipball_url)) {
-             // Prepare GitHub data
-            //https://github.com/fulfillmen/fulfillmen/archive/refs/tags/v1.1.9.zip
-             $new_version = $release_data->tag_name;
-             //$package_url = $release_data->zipball_url;
-             $package_url = "https://github.com/fulfillmen/fulfillmen/archive/refs/tags/$new_version.zip";
+         if (is_object($release_data) && isset($release_data->name, $release_data->download_url)) {
+             $new_version = $release_data->name;
+             $package_url = $release_data->download_url;
              $plugin_slug = 'fulfillmen/fulfillmen.php';
              $plugin_data = array(
                  'new_version' => $new_version,
                  'url' => 'https://github.com/fulfillmen/fulfillmen',
                  'package' => $package_url,
-                 'slug'=> "fulfillmen"
+                 'slug'=> "fulfillmen", 
+                 'plugin' => plugin_basename( __FILE__ ),
+                 'tested' => $release_data->tested,
+
              );
-         
              // Add plugin update information to transient
              $transient->response[$plugin_slug] = (object) $plugin_data;
-             // Cache the GitHub data
+             // Cache the data
              update_option($github_cache_key, $release_data);
          }
      }
@@ -132,6 +139,58 @@ function update_fulfillmen_plugin($transient) {
      return $transient;
 }
 
+
+function fulfillmen_plugin_info($res, $action, $args){
+    if( 'plugin_information' !== $action ) {
+		return $res;
+	}
+    if( plugin_basename( __DIR__ ) !== $args->slug ) {
+		return $res;
+	}
+    $remote = wp_remote_get( 
+		'https://fulfillmen.github.io/fulfillmen/manifest.json', 
+		array(
+			'timeout' => 10,
+			'headers' => array(
+				'Accept' => 'application/json'
+			) 
+		)
+	);
+
+    if( is_wp_error( $remote ) || 200 !== wp_remote_retrieve_response_code( $remote ) || empty( wp_remote_retrieve_body( $remote ) )) {
+		return $res;	
+	}
+	$remote = json_decode( wp_remote_retrieve_body( $remote ) );
+    $res = new stdClass();
+	$res->name = $remote->name;
+	$res->slug = $remote->slug;
+	$res->author = $remote->author;
+	$res->author_profile = $remote->author_profile;
+	$res->version = $remote->version;
+	$res->tested = $remote->tested;
+	$res->requires = $remote->requires;
+	$res->requires_php = $remote->requires_php;
+	$res->download_link = $remote->download_url;
+	$res->trunk = $remote->download_url;
+	$res->last_updated = $remote->last_updated;
+	$res->sections = array(
+		'description' => $remote->sections->description,
+		'installation' => $remote->sections->installation,
+		'changelog' => $remote->sections->changelog
+	);
+
+    if( ! empty( $remote->sections->screenshots ) ) {
+		$res->sections[ 'screenshots' ] = $remote->sections->screenshots;
+	}
+
+	$res->banners = array(
+		'low' => $remote->banners->low,
+		'high' => $remote->banners->high
+	);
+	
+	return $res;
+
+}
 
 
 // function fulfillmen_displayNews(){
@@ -240,6 +299,7 @@ function run_fulfillmen()
         add_action('admin_init', 'check_plugin_updates');
         update_option("fulfillmen_version", $pluginversion);
         add_filter('pre_set_site_transient_update_plugins', 'update_fulfillmen_plugin', 9999999);
+        add_filter( 'plugins_api', 'fulfillmen_plugin_info', 20, 3);
 
         //add_filter('plugins_api', 'custom_update_checker', 20, 3);
         //fulfillmen_displayNews();
