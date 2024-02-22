@@ -4,13 +4,13 @@
 	"author": "<a href='https://dhairyasharma.com'>Dhairy Sharma</a>",
 	"author_profile": "https://www.linkedin.com/in/dharm-sharma/",
 	"donate_link": "https://www.linkedin.com/in/dharm-sharma/",
-	"version": "1.1.22",
+	"version": "1.1.23",
 	"download_url": "https://fulfillmen.github.io/fulfillmen/Releases/fulfillmen.zip",
 	"requires": "6.3",
 	"tested": "6.4.3",
 	"requires_php": "8.2",
 	"added": "2018-09-10 02:10:00",
-	"last_updated": "2024-02-21 11:07:00",
+	"last_updated": "2024-02-22 10:07:00",
 	"rating": "76",
 	"num_ratings": "508",
 	"ratings": {
@@ -24,7 +24,7 @@
 	"sections": {
 		"description": "Fulfillmen's official wordpress plugin for woocommerce based ecommerce stores.",
 		"installation": "Click the activate button and enter the details on the setup page.",
-		"changelog": "<h4>v1.1.22 released on Feb 21th, 2024</h4><ul><li>Fixed: PHP 8 warnings and errors</li><li>Improvements: Added support to manually re-sync orders which are already shipped</li><li>Improvement: Added support to push product imaegs to the wms for dropship orders.</li><li>Improvement: Added support for dropship mode order processing.</li></ul><h4>v1.1.1 released on March 18th, 2023</h4><ul><li>Fixed: PHP 8 issues</li></ul><h4>v1.1 released on December 29th, 2022</h4><ul><li>Feature: Free for everyone. Removed EDD integration. Automatic updates integrated with Github release.</li><li>Improvement: Add settings link to plugin page.</li></ul><h4>v1.0.2 released on August 21, 2021</h4><ul><li>Fixed: Bad logic where configurations weren’t always regenerated after sites changed.</li><li>Fixed: Various PHP warnings.</li></ul><h4>v1.0.1 released on September 18, 2020</h4><ul><li>Feature: Will automatically install default theme when creating new sites if needed.</li><li>Improvement: Shows overlay loader while new sites are installing.</li><li>Improvement: Added fields for domain or label on the new site dialog.</li><li>Improvement: Compatibility for alternative wp-config.php location.</li><li>Improvement: Force HTTPS in urls.</li><li>Fixed: Inconsistent response of sites array.</li></ul><h4>v1.0.0 released on September 9, 2020</h4><ul><li>Initial release of WP Freighter. Ability to add or remove stacked sites with database prefix <code>stacked_#_</code>.</li><li>Feature: Clone existing site to new database prefix</li><li>Feature: Add new empty site to new database prefix</li><li>Feature: Domain mapping off or on</li><li>Feature: Files shared or dedicated</li></ul>"
+		"changelog": "<h4>v1.1.23 release on Feb 22nd, 2024</h4><ul><li>Fixed the update menu bug</li></ul><h4>v1.1.22 released on Feb 21st, 2024</h4><ul><li>Fixed: PHP 8 warnings and errors</li><li>Improvements: Added support to manually re-sync orders which are already shipped</li><li>Improvement: Added support to push product imaegs to the wms for dropship orders.</li><li>Improvement: Added support for dropship mode order processing.</li></ul><h4>v1.1.1 released on March 18th, 2023</h4><ul><li>Fixed: PHP 8 issues</li></ul><h4>v1.1 released on December 29th, 2022</h4><ul><li>Feature: Free for everyone. Removed EDD integration. Automatic updates integrated with Github release.</li><li>Improvement: Add settings link to plugin page.</li></ul><h4>v1.0.2 released on August 21, 2021</h4><ul><li>Fixed: Bad logic where configurations weren’t always regenerated after sites changed.</li><li>Fixed: Various PHP warnings.</li></ul><h4>v1.0.1 released on September 18, 2020</h4><ul><li>Feature: Will automatically install default theme when creating new sites if needed.</li><li>Improvement: Shows overlay loader while new sites are installing.</li><li>Improvement: Added fields for domain or label on the new site dialog.</li><li>Improvement: Compatibility for alternative wp-config.php location.</li><li>Improvement: Force HTTPS in urls.</li><li>Fixed: Inconsistent response of sites array.</li></ul><h4>v1.0.0 released on September 9, 2020</h4><ul><li>Initial release of WP Freighter. Ability to add or remove stacked sites with database prefix <code>stacked_#_</code>.</li><li>Feature: Clone existing site to new database prefix</li><li>Feature: Add new empty site to new database prefix</li><li>Feature: Domain mapping off or on</li><li>Feature: Files shared or dedicated</li></ul>"
 	},
 	"banners": {
 		"low": "https://fulfillmen.github.io/fulfillmen/res/img/fulfillmen-low-res.jpg",
