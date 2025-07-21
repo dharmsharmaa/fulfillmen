@@ -1,0 +1,6 @@
+ordernumber,trackingid,provider,date_shipped,status,notes
+1001,TRACK12345,Fulfillmen,2025-07-21,Shipped,Package 1 of 1
+#1002,TRACK67890,DHL,2025-07-21,Shipped,Express delivery
+WC-1003,USPS98765432,USPS,2025-07-20,Shipped,Regular delivery
+FM-1004,FDX123456789,FedEx,2025-07-19,Shipped,Priority overnight
+Order1005,UPS1Z999AA99999999,UPS,2025-07-21,Shipped,Ground shipping
