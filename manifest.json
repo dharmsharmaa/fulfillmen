@@ -7,7 +7,7 @@
 	"version": "1.4.8",
 	"download_url": "https://dharmsharmaa.github.io/fulfillmen/Releases/fulfillmen.zip",
 	"requires": "6.3",
-	"tested": "6.7",
+	"tested": "6.8",
 	"requires_php": "8.0",
 	"added": "2018-09-10 02:10:00",
 	"last_updated": "2025-7-24 01:11:00",
